@@ -40,7 +40,7 @@
 .card-history {
   margin-top: 18px;
   margin-bottom: 20px;
-  text-decoration: none;
+  
 }
 .card-title {
   font-family: 'Poppins', sans-serif;
