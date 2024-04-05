@@ -2,7 +2,7 @@
   <!-- navbar -->
   <nav class="navbar fixed-bottom mx-auto">
     <div class="container px-4">
-      <RouterLink class="navbar-brand home" to="/">
+      <RouterLink class="navbar-brand pt-2" to="/">
         <img src="/src/assets/home-2.svg" alt="home" />
       </RouterLink>
       <RouterLink class="navbar-brand" to="/history-donasi">

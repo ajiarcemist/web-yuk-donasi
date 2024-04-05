@@ -1,11 +1,36 @@
-<script setup>
+<script>
 import CardDonasi from '@/components/CardDonasi.vue'
+import { useRouter } from 'vue-router'
+
+export default {
+  components: {
+    CardDonasi
+  },
+  setup() {
+    const router = useRouter()
+
+    const goBack = () => {
+      router.back()
+    }
+
+    return {
+      goBack
+    }
+  }
+}
 </script>
 <template>
   <body class="mx-auto">
     <div class="background-full">
-      <img class="img-fluid" src="/src/assets/cardImg.png" alt="background-img" />
+      <div class="bg-image">
+        <img class="img-fluid" src="/src/assets/cardImg.png" alt="background-img" />
+        <div class="mask" style="background-color: hsla(0, 0%, 0%, 0.4)"></div>
+      </div>
+
       <div class="container container-full px-4">
+        <div class="col-2 go-back">
+          <img @click="goBack" class="pointer" src="/src/assets/arrow-left.svg" alt="arrow" />
+        </div>
         <div class="title-donation">
           <div><h1>Pembangunan Masjid</h1></div>
           <div><p>Yogyakarta</p></div>
@@ -48,7 +73,7 @@ import CardDonasi from '@/components/CardDonasi.vue'
           <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
           <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
         </swiper-container>
-        <div class="mx-auto d-grid mb-4">
+        <div class="mx-auto d-grid sumbang-button pb-4">
           <button class="btn button-sumbang text-wrap" type="button">Sumbangkan Sekarang!</button>
         </div>
       </div>
@@ -62,10 +87,10 @@ body {
   /* position: relative; */
   max-width: 576px;
   background-color: #fafafa;
+  height: 100dvh;
 }
 .background-full {
   background-color: #fafafa;
-  height: 100dvh;
 }
 
 /* White background for the card itself */
@@ -161,5 +186,14 @@ body {
   opacity: 50%;
   font-style: light;
   font-weight: normal; /* Added to remove bold */
+}
+.pointer {
+  cursor: pointer;
+  margin-top: -15vh;
+  height: 30px;
+  width: 30px;
+}
+.sumbang-button {
+  margin-top: -30px;
 }
 </style>

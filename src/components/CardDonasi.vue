@@ -1,26 +1,43 @@
-<script></script>
+<script>
+import { RouterLink, RouterView } from 'vue-router'
 
+export default {
+  components: {
+    RouterLink,
+    RouterView
+  }
+}
+</script>
 <template>
-  <div class="mx-auto card rounded-4 card-project">
-    <div>
-      <img src="/src/assets/cardImg.png" class="card-img-top rounded-4" alt="coverCard" />
-    </div>
-    <div class="card-body card-project-body">
-      <h5 class="card-title">Pembangunan Masjid</h5>
-      <p class="card-text">Yogyakarta</p>
-      <div class="progress">
-        <div
-          class="progress-bar warna-progress rounded-4"
-          role="progressbar"
-          style="width: 50%"
-          aria-valuenow="25"
-          aria-valuemin="0"
-          aria-valuemax="100"
-        ></div>
-      </div>
-      <p>Terkumpul <span class="total-donasi">Rp.230.000.000</span></p>
+  <div class="swipe">
+    <div class="d-flex justify-content-center">
+      <RouterLink to="/detail" style="text-decoration: none">
+        <div class="card rounded-4 card-project">
+          <div>
+            <div>
+              <img src="/src/assets/cardImg.png" class="card-img-top rounded-4" alt="coverCard" />
+            </div>
+            <div class="card-body card-project-body">
+              <h5 class="card-title">Pembangunan Masjid</h5>
+              <p class="card-text">Yogyakarta</p>
+              <div class="progress">
+                <div
+                  class="progress-bar warna-progress rounded-4"
+                  role="progressbar"
+                  style="width: 50%"
+                  aria-valuenow="25"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
+              </div>
+              <p>Terkumpul <span class="total-donasi">Rp.230.000.000</span></p>
+            </div>
+          </div>
+        </div>
+      </RouterLink>
     </div>
   </div>
+  <RouterView />
 </template>
 <style scoped>
 /* Card */
@@ -58,5 +75,8 @@
   font-family: 'Poppins', sans-serif;
   font-weight: 500;
   font-style: normal;
+}
+.swipe {
+  margin-bottom: 50px;
 }
 </style>

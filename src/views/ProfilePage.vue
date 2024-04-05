@@ -1,4 +1,20 @@
-<script setup></script>
+<script>
+import { useRouter } from 'vue-router'
+
+export default {
+  setup() {
+    const router = useRouter()
+
+    const goBack = () => {
+      router.back()
+    }
+
+    return {
+      goBack
+    }
+  }
+}
+</script>
 
 <template>
   <body class="mx-auto shadow">
@@ -6,8 +22,8 @@
     <div class="banner pb-2">
       <div class="container pt-4 mb-3 px-4">
         <div class="d-flex justify-content-between">
-          <div>
-            <img src="/src/assets/black-arrow.svg" alt="arrow" />
+          <div class="go-back">
+            <img @click="goBack" class="pointer" src="/src/assets/black-arrow.svg" alt="arrow" />
           </div>
 
           <div><img src="/src/assets/sign-out-alt.svg" alt="sign-out" /></div>
@@ -128,5 +144,8 @@ body {
 }
 .info-donasi {
   max-width: 95%;
+}
+.pointer {
+  cursor: pointer;
 }
 </style>
