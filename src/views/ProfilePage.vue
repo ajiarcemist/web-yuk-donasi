@@ -1,4 +1,5 @@
 <script>
+import axios from 'axios';
 import { useRouter } from 'vue-router'
 
 export default {
@@ -7,6 +8,25 @@ export default {
 
     const goBack = () => {
       router.back()
+    }
+
+    let profileData = {};
+
+    const profile = () => {
+      axios.post(import.meta.env.VITE_APP_API + 'users', {}, {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token'),
+        }
+      }).then((resp) => {
+        console.info(resp);
+
+        // masukkan ke data
+      }).catch((err) => {
+        const data = err.response.data;
+        console.info(data);
+        // tampilkan modal
+
+      })
     }
 
     return {
