@@ -1,5 +1,37 @@
-<script setup>
+<script>
+import axios from 'axios';
 import { RouterLink, RouterView } from 'vue-router'
+
+export default {
+  name: 'LoginPage',
+  
+  data() {
+    return {
+      filled: {
+        email: '',
+        password: '',
+      }
+    }
+  },
+
+  methods: {
+    login() {
+      console.info('login');
+      axios.post(import.meta.env.VITE_APP_API + '/auth/login', {
+        email: this.filled.email,
+        password: this.filled.password,
+      }).then((resp) => {
+        const data = resp.data.data;
+        localStorage.setItem('token', data.access_token);
+        this.$router.replace('/');
+      }).catch((err) => {
+        const data = err.response.data;
+        // tampilkan pesan error berupa modal
+      })
+    }
+  }
+}
+
 </script>
 <template>
   <body class="mx-auto shadow">
@@ -19,6 +51,7 @@ import { RouterLink, RouterView } from 'vue-router'
               id="exampleInputEmail1"
               aria-describedby="emailHelp"
               placeholder="Masukkan email"
+              v-model="filled.email"
             />
           </div>
           <div class="mb-3">
@@ -28,12 +61,13 @@ import { RouterLink, RouterView } from 'vue-router'
               class="form-control"
               id="exampleInputPassword1"
               placeholder="Masukkan password"
+              v-model="filled.password"
             />
           </div>
           <div class="mb-5 text-end">
             <a href="#" class="green-text">Lupa Password?</a>
           </div>
-          <button type="submit" class="btn login-button">Masuk</button>
+          <button type="submit" class="btn login-button" @click.prevent="login()">Masuk</button>
         </form>
         <p class="text-center register-text">
           <span>Belum punya akun?</span>
