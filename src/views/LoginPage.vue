@@ -1,37 +1,48 @@
 <script>
-import axios from 'axios';
+import axios from 'axios'
 import { RouterLink, RouterView } from 'vue-router'
 
 export default {
   name: 'LoginPage',
-  
+
   data() {
     return {
       filled: {
         email: '',
-        password: '',
+        password: ''
       }
     }
   },
 
   methods: {
     login() {
-      console.info('login');
-      axios.post(import.meta.env.VITE_APP_API + '/auth/login', {
-        email: this.filled.email,
-        password: this.filled.password,
-      }).then((resp) => {
-        const data = resp.data.data;
-        localStorage.setItem('token', data.access_token);
-        this.$router.replace('/');
-      }).catch((err) => {
-        const data = err.response.data;
-        // tampilkan pesan error berupa modal
-      })
+      console.info('login')
+
+      axios
+        .post(
+          import.meta.env.VITE_APP_API + 'auth/login',
+          {
+            email: this.filled.email,
+            password: this.filled.password
+          },
+          {
+            headers: {
+              Accept: 'aplication/json'
+            }
+          }
+        )
+        .then((resp) => {
+          const data = resp.data.data
+          localStorage.setItem('token', data.access_token)
+          this.$router.replace('/')
+        })
+        .catch((err) => {
+          const data = err.response.data
+          console.log(data)
+        })
     }
   }
 }
-
 </script>
 <template>
   <body class="mx-auto shadow">

@@ -1,6 +1,3 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-</script>
 <template>
   <body class="mx-auto shadow">
     <div class="container container-atas">
@@ -19,6 +16,7 @@ import { RouterLink, RouterView } from 'vue-router'
               id="exampleInputEmail1"
               aria-describedby="emailHelp"
               placeholder="Masukkan email"
+              v-model="filled.email"
             />
           </div>
           <div class="mb-3">
@@ -28,6 +26,7 @@ import { RouterLink, RouterView } from 'vue-router'
               class="form-control"
               id="exampleInputNama"
               placeholder="Masukkan nama"
+              v-model="filled.name"
             />
           </div>
           <div class="mb-3">
@@ -37,10 +36,13 @@ import { RouterLink, RouterView } from 'vue-router'
               class="form-control"
               id="exampleInputPassword1"
               placeholder="Masukkan kata sandi"
+              v-model="filled.password"
             />
           </div>
 
-          <button type="submit" class="btn login-button my-4">Daftar</button>
+          <button type="submit" class="btn login-button my-4" @click.prevent="register()">
+            Daftar
+          </button>
         </form>
         <p class="text-center">
           <span class="text-muted">Udah punya akun?</span>
@@ -51,6 +53,47 @@ import { RouterLink, RouterView } from 'vue-router'
   </body>
   <RouterView />
 </template>
+
+<script>
+import axios from 'axios' // Make sure Axios is imported
+import { RouterLink, RouterView } from 'vue-router'
+
+export default {
+  name: 'daftarPage',
+  data() {
+    return {
+      filled: {
+        name: '',
+        email: '',
+        password: ''
+      }
+    }
+  },
+  methods: {
+    register() {
+      console.info('register')
+      axios
+        .post(import.meta.env.VITE_APP_API + 'auth/register', {
+          name: this.filled.name,
+          email: this.filled.email,
+          password: this.filled.password
+        })
+        .then((resp) => {
+          const data = resp.data
+          console.info(data)
+        })
+        .catch((err) => {
+          const data = err.response.data
+          console.info(data)
+        })
+    }
+  },
+  components: {
+    RouterLink,
+    RouterView
+  }
+}
+</script>
 
 <style scoped>
 body {
