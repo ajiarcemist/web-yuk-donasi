@@ -16,7 +16,6 @@
       </RouterLink>
     </div>
   </nav>
-  <!-- end navbar -->
   <RouterView />
 </template>
 
@@ -33,7 +32,7 @@ export default {
 
 <style scoped>
 .navbar {
-  z-index: 4; /* Adjust z-index as needed */
+  z-index: 4;
   background-color: white;
   max-width: 576px;
 }

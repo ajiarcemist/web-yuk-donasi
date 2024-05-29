@@ -16,14 +16,13 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: HomeView,
+      meta: { auth: true }
     },
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
+
       component: () => import('../views/AboutView.vue')
     },
     {
@@ -37,29 +36,34 @@ const router = createRouter({
       component: DaftarBerhasil
     },
     {
-      path: '/detail',
+      path: '/detail/:id',
       name: 'detail',
-      component: DetilPage
+      component: DetilPage,
+      meta: { auth: true }
     },
     {
-      path: '/donasi-gagal',
+      path: '/donasi-gagal/:id',
       name: 'donasiGagal',
-      component: DonasiGagal
+      component: DonasiGagal,
+      meta: { auth: true }
     },
     {
-      path: '/donasi-progress',
+      path: '/donasi-progress/:id',
       name: 'donasiProgress',
-      component: DonasiProgress
+      component: DonasiProgress,
+      meta: { auth: true }
     },
     {
-      path: '/donasi-sukses',
+      path: '/donasi-sukses/:id',
       name: 'donasisukses',
-      component: DonasiSukses
+      component: DonasiSukses,
+      meta: { auth: true }
     },
     {
       path: '/history-donasi',
       name: 'historyDonasi',
-      component: HistoryDonasi
+      component: HistoryDonasi,
+      meta: { auth: true }
     },
     {
       path: '/login',
@@ -69,9 +73,33 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: ProfilePage
+      component: ProfilePage,
+      meta: { auth: true }
     }
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('token')
+
+  if (to.matched.some((record) => record.meta.auth)) {
+    if (!isAuthenticated) {
+      next({
+        path: '/login'
+      })
+    } else {
+      next()
+    }
+  } else {
+    if (
+      isAuthenticated &&
+      (to.name === 'loginPage' || to.name === 'daftar' || to.name === 'daftar-success')
+    ) {
+      next({ name: 'home' })
+    } else {
+      next()
+    }
+  }
 })
 
 export default router

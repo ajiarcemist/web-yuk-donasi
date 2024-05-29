@@ -1,31 +1,93 @@
-<script></script>
 <template>
-  <div class="card mb-3 card-history border-0 rounded-4">
-    <div class="row">
-      <div class="col-3 my-auto img-card">
-        <img
-          src="/src/assets/cover.png"
-          class="img-fluid rounded-4 history-img"
-          alt="cover-daftar"
-        />
-      </div>
-      <div class="col-7 left-content-card">
-        <div class="card-body body-card-history">
-          <h5 class="card-title">Pembangunan Mas...</h5>
-          <p class="card-text">Tabanan</p>
+  <div>
+    <div v-for="transaction in transactions" :key="transaction.id" @click="allowRouteAccess">
+      <RouterLink :to="getRouterLink(transaction.status, transaction.id)" class="router-link">
+        <div class="card mb-3 card-history border-0 rounded-4">
+          <div class="row">
+            <div class="col-3 my-auto img-card">
+              <img
+                :src="transaction.campaign_img_url"
+                class="img-fluid rounded-4 history-img"
+                alt="cover-daftar"
+              />
+            </div>
+            <div class="col-7 left-content-card">
+              <div class="card-body body-card-history">
+                <h5 class="card-title">{{ transaction.title }}</h5>
+                <p class="card-text">{{ transaction.location }}</p>
+              </div>
+            </div>
+            <div class="col-2">
+              <img :src="getStatusIcon(transaction.status)" alt="checkmark" class="mx-auto" />
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="col-2">
-        <img src="/src/assets/check.svg" alt="checkmark" class="mx-auto" />
-      </div>
+      </RouterLink>
     </div>
   </div>
 </template>
 
-<style scoped>
-/* Gaya CSS dari main.css */
+<script>
+import { RouterLink } from 'vue-router'
+import axios from '../interceptors/axios'
 
-/* Card text */
+export default {
+  components: {
+    RouterLink
+  },
+  data() {
+    return {
+      transactions: []
+    }
+  },
+  created() {
+    this.fetchCampaignTransactions()
+  },
+  methods: {
+    async fetchCampaignTransactions() {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_APP_API}campaigntransactions/${localStorage.getItem('user_id')}`,
+          {
+            headers: {
+              Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+          }
+        )
+        this.transactions = response.data.data
+      } catch (error) {
+        console.error('Failed to fetch campaign transactions:', error)
+      }
+    },
+    getRouterLink(status, id) {
+      if (status === 'success') {
+        return `/donasi-sukses/${id}`
+      } else if (status === 'pending') {
+        return `/donasi-progress/${id}`
+      } else {
+        return `/donasi-gagal/${id}`
+      }
+    },
+    getStatusIcon(status) {
+      if (status === 'success') {
+        return '/src/assets/check.svg'
+      } else if (status === 'pending') {
+        return '/src/assets/flag.svg'
+      } else {
+        return '/src/assets/cross.svg'
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.router-link {
+  text-decoration: none;
+}
+</style>
+
+<style scoped>
 .card-text {
   margin-top: -5px;
   opacity: 0.5;
@@ -40,7 +102,6 @@
 .card-history {
   margin-top: 18px;
   margin-bottom: 20px;
-  
 }
 .card-title {
   font-family: 'Poppins', sans-serif;
@@ -74,6 +135,10 @@
   display: flex;
   padding-left: 0px;
   align-items: center; /* Vertically center */
+}
+
+.router-link {
+  text-decoration: none;
 }
 
 /* Adjust margin for better alignment */

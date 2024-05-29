@@ -1,7 +1,6 @@
 <script setup>
 import FooterNav from '@/components/FooterNav.vue'
 import CardHistory from '@/components/CardHistory.vue'
-import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
@@ -10,18 +9,12 @@ import { RouterLink, RouterView } from 'vue-router'
     <div class="container">
       <!-- card daftar donasi -->
       <h2 class="history-donasi">Donasi Anda</h2>
-      <RouterLink to="/donasi-sukses"><CardHistory /></RouterLink>
-      <RouterLink to="/donasi-sukses"><CardHistory /></RouterLink>
-      <RouterLink to="/donasi-sukses"><CardHistory /></RouterLink>
-      <RouterLink to="/donasi-sukses"><CardHistory /></RouterLink>
+      <CardHistory />
     </div>
-    <RouterView />
   </body>
 </template>
 
 <style scoped>
-/* Gaya CSS dari main.css */
-
 body {
   background-color: #fafafa;
   overflow: auto;

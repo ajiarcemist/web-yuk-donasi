@@ -1,6 +1,7 @@
 <script>
 import CardDonasi from '@/components/CardDonasi.vue'
 import { useRouter } from 'vue-router'
+import axios from '@/interceptors/axios'
 
 export default {
   components: {
@@ -16,14 +17,90 @@ export default {
     return {
       goBack
     }
+  },
+  data() {
+    return {
+      campaigns: {},
+      loading: true,
+      error: null,
+      filled: {
+        nominal: ''
+      }
+    }
+  },
+  created() {
+    this.fetchData()
+  },
+  methods: {
+    async fetchData() {
+      try {
+        const campaignsId = this.$route.params.id
+        const response = await axios.get(
+          `${import.meta.env.VITE_APP_API}campaigns/${campaignsId}`,
+          {
+            headers: {
+              Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+          }
+        )
+        this.campaigns = response.data.data
+        console.log('Fetched campaigns:', this.campaigns)
+      } catch (err) {
+        this.error = 'Failed to fetch data'
+        console.error(err)
+      } finally {
+        this.loading = false
+      }
+    },
+    formatRupiah(amount) {
+      const formatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      })
+      return formatter.format(amount)
+    },
+    async donate() {
+      const campaignId = this.$route.params.id
+      const userId = localStorage.getItem('user_id')
+      const amount = this.filled.nominal
+
+      try {
+        const response = await axios.post(`${import.meta.env.VITE_APP_API}donate`, {
+          user_id: userId,
+          campaign_id: campaignId,
+          amount: amount
+        })
+        console.log('Donation successful:', response.data)
+      } catch (error) {
+        console.error('Error donating:', error)
+      }
+    },
+    async submitDonation() {
+      try {
+        const campaignId = this.$route.params.id
+        const userId = localStorage.getItem('user_id')
+        const amount = this.filled.nominal
+
+        const response = await axios.post(`${import.meta.env.VITE_APP_API}donate`, {
+          user_id: userId,
+          campaign_id: campaignId,
+          amount: amount
+        })
+        console.log('Donation successful:', response.data)
+      } catch (error) {
+        console.error('Error donating:', error)
+      }
+    }
   }
 }
 </script>
+
 <template>
   <body class="mx-auto">
     <div class="background-full">
       <div class="bg-image">
-        <img class="img-fluid" src="/src/assets/cardImg.png" alt="background-img" />
+        <img class="img-fluid" :src="campaigns.campaign_image_url" alt="background-img" />
         <div class="mask" style="background-color: hsla(0, 0%, 0%, 0.4)"></div>
       </div>
 
@@ -32,59 +109,67 @@ export default {
           <img @click="goBack" class="pointer" src="/src/assets/arrow-left.svg" alt="arrow" />
         </div>
         <div class="title-donation">
-          <div><h1>Pembangunan Masjid</h1></div>
-          <div><p>Yogyakarta</p></div>
+          <div>
+            <h1>{{ campaigns.title }}</h1>
+          </div>
+          <div>
+            <p>{{ campaigns.location }}</p>
+          </div>
         </div>
 
         <div class="container container-card rounded-4">
           <p class="title-card">Tentang</p>
           <p class="title-content">
-            Masjid ini sangat diperlukan untuk warga muslim di wilayah Mergangsan Kota Yogyakarta,
-            sehingga mereka dapat dengan khidmat beribadah jamaah.
+            {{ campaigns.description }}
           </p>
-          <p class="donation-need">Dibutuhkan: Rp.670.000.000</p>
+          <p class="donation-need">Dibutuhkan: {{ formatRupiah(campaigns.goal_amount) }}</p>
           <div class="progress">
             <div
-              class="progress-bar rounded-4 warna-progress"
+              class="progress-bar warna-progress rounded-4"
               role="progressbar"
-              aria-valuenow="25"
+              :style="{ width: campaigns.percentage_value + '%' }"
+              :aria-valuenow="campaigns.percentage_value"
               aria-valuemin="0"
               aria-valuemax="100"
             ></div>
           </div>
           <div class="total-donasi">
-            <p class="text-muted">Terkumpul <span class="text-donasi">Rp.230.000.000</span></p>
+            <p class="text-muted">
+              Terkumpul
+              <span class="text-donasi">{{ formatRupiah(campaigns.current_amount) }}</span>
+            </p>
           </div>
-
-          <p class="title-nominal">Nominal</p>
-          <div class="border border-1 rounded nominal-amount">10.000.000</div>
+          <form id="donationForm" action="">
+            <div class="form-group">
+              <label for="inputNominal" class="title-nominal">Nominal</label>
+              <input
+                type="text"
+                class="form-control nominal-amount rounded"
+                id="inputNominal"
+                placeholder="Masukan Nominal Donasi"
+                v-model="filled.nominal"
+              />
+            </div>
+          </form>
         </div>
-        <swiper-container
-          pagination="true"
-          space-between="60"
-          slides-per-view="1"
-          navigation="false"
-          loop="true"
-        >
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-        </swiper-container>
+        <CardDonasi />
         <div class="mx-auto d-grid sumbang-button pb-4">
-          <button class="btn button-sumbang text-wrap" type="button">Sumbangkan Sekarang!</button>
+          <button
+            class="btn button-sumbang text-wrap"
+            type="submit"
+            form="donationForm"
+            @click.prevent="submitDonation"
+          >
+            Sumbangkan Sekarang!
+          </button>
         </div>
       </div>
     </div>
   </body>
 </template>
-<style scoped>
-/* Default background for all elements */
 
+<style scoped>
 body {
-  /* position: relative; */
   max-width: 576px;
   background-color: #fafafa;
   height: 100dvh;
@@ -93,7 +178,6 @@ body {
   background-color: #fafafa;
 }
 
-/* White background for the card itself */
 .container-card {
   background-color: #ffff;
   padding: 30px 20px 24px 20px;
@@ -105,10 +189,9 @@ body {
 .container-full {
   margin-top: -35%;
   position: relative;
-  z-index: 2; /* Higher z-index to appear in front */
+  z-index: 2;
 }
 
-/* Progress bar */
 .progress {
   margin-bottom: 16px;
 }
@@ -117,13 +200,10 @@ body {
   width: 50%;
 }
 .container-card .progress .progress-bar.warna-progress {
-  /* Existing styles */
-  width: 50%;
   color: #00bf99;
   background-color: #00bf99;
 }
 
-/* Total donasi */
 .text-donasi {
   color: #00bf99;
 }
@@ -185,7 +265,7 @@ body {
 .text-muted {
   opacity: 50%;
   font-style: light;
-  font-weight: normal; /* Added to remove bold */
+  font-weight: normal;
 }
 .pointer {
   cursor: pointer;

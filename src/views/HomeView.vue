@@ -1,89 +1,52 @@
-<script setup>
-import CardDonasi from '@/components/CardDonasi.vue'
-import FooterNav from '@/components/FooterNav.vue'
-</script>
-
 <template>
   <body class="mx-auto shadow">
     <FooterNav />
+    <!-- me -->
     <div class="container">
       <div class="title-content">
         <div class="row">
           <div class="col-8">
             <div class="title-main">
-              <h1>Howdy,<br />Ilham Aji</h1>
+              <h1>Howdy,<br />{{ users.name }}</h1>
             </div>
             <p class="title-desc text-muted">Sudah berbuat baik hari ini?</p>
           </div>
 
           <div class="col-4">
-            <img src="/src/assets/avatar.png" alt="avatar" class="avatar" />
+            <img :src="users.avatar_url" alt="avatar" class="avatar" />
           </div>
         </div>
-        <swiper-container
-          pagination="true"
-          space-between="60"
-          slides-per-view="1"
-          navigation="true"
-          loop="true"
-        >
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-          <swiper-slide><CardDonasi class="my-5"> </CardDonasi></swiper-slide>
-        </swiper-container>
+        <CardDonasi />
 
-        <!-- card daftar donasi -->
+        <!-- history donasi-->
         <p class="history-donasi">Donasi Anda</p>
-        <div class="card mb-3 card-history border-0 rounded-4">
-          <div class="row">
-            <div class="col-3 my-auto img-card">
-              <img
-                src="/src/assets/cover.png"
-                class="img-fluid rounded-4 history-img"
-                alt="cover-daftar"
-              />
-            </div>
-            <div class="col-9 left-content-card">
-              <div class="card-body body-card-history">
-                <h5 class="card-title">Pembangunan Masjid</h5>
-                <p class="card-text">Tabanan</p>
-              </div>
-            </div>
-          </div>
+        <!-- Konten history donasi -->
+
+        <div v-if="loading">
+          <p>Loading...</p>
         </div>
-        <div class="card mb-3 card-history border-0 rounded-4">
-          <div class="row">
-            <div class="col-3 my-auto img-card">
-              <img
-                src="/src/assets/cover.png"
-                class="img-fluid rounded-4 history-img"
-                alt="cover-daftar"
-              />
-            </div>
-            <div class="col-9 left-content-card">
-              <div class="card-body body-card-history">
-                <h5 class="card-title">Pembangunan Masjid</h5>
-                <p class="card-text">Tabanan</p>
-              </div>
-            </div>
-          </div>
+        <div v-else-if="error">
+          <p>{{ error }}</p>
         </div>
-        <div class="card mb-3 card-history border-0 rounded-4">
-          <div class="row">
-            <div class="col-3 my-auto img-card">
-              <img
-                src="/src/assets/cover.png"
-                class="img-fluid rounded-4 history-img"
-                alt="cover-daftar"
-              />
-            </div>
-            <div class="col-9 left-content-card">
-              <div class="card-body body-card-history">
-                <h5 class="card-title">Pembangunan Masjid</h5>
-                <p class="card-text">Tabanan</p>
+        <div v-else>
+          <div
+            v-for="campaign in campaigns"
+            :key="campaign.id"
+            class="card mb-3 card-history border-0 rounded-4"
+          >
+            <div class="row">
+              <div class="col-3 my-auto img-card">
+                <img
+                  :src="campaign.campaign_image_url"
+                  class="img-fluid rounded-4 history-img"
+                  :alt="campaign.title"
+                />
+              </div>
+              <div class="col-9 left-content-card">
+                <div class="card-body body-card-history">
+                  <h5 class="card-title">{{ campaign.title }}</h5>
+                  <p class="card-text">{{ campaign.location }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -92,6 +55,67 @@ import FooterNav from '@/components/FooterNav.vue'
     </div>
   </body>
 </template>
+
+<script>
+import CardDonasi from '@/components/CardDonasi.vue'
+import FooterNav from '@/components/FooterNav.vue'
+import axios from '../interceptors/axios'
+
+export default {
+  components: {
+    CardDonasi,
+    FooterNav
+  },
+  data() {
+    return {
+      users: {},
+      campaigns: [],
+      loading: true,
+      error: null
+    }
+  },
+  created() {
+    this.fetchDataCampaign()
+    this.fetchDataUser()
+  },
+  methods: {
+    async fetchDataUser() {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_APP_API}users`, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
+        this.users = response.data.data
+        console.log('Fetched user:', this.users)
+      } catch (err) {
+        this.error = 'Failed to fetch user data'
+        console.error(err)
+      }
+    },
+    async fetchDataCampaign() {
+      try {
+        const userId = localStorage.getItem('user_id')
+        const response = await axios.get(
+          `${import.meta.env.VITE_APP_API}campaigns/history/${userId}`,
+          {
+            headers: {
+              Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+          }
+        )
+        this.campaigns = response.data.data
+        console.log('Fetched campaigns:', this.campaigns)
+        this.loading = false
+      } catch (err) {
+        this.error = 'Failed to fetch campaign data'
+        console.error(err)
+        this.loading = false
+      }
+    }
+  }
+}
+</script>
 
 <style scoped>
 /* Gaya CSS dari main.css */

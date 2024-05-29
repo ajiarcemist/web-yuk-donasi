@@ -55,8 +55,8 @@
 </template>
 
 <script>
-import axios from 'axios' // Make sure Axios is imported
-import { RouterLink, RouterView } from 'vue-router'
+import axios from 'axios'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
 
 export default {
   name: 'daftarPage',
@@ -69,23 +69,26 @@ export default {
       }
     }
   },
+  setup() {
+    const router = useRouter()
+    return { router }
+  },
   methods: {
-    register() {
-      console.info('register')
-      axios
-        .post(import.meta.env.VITE_APP_API + 'auth/register', {
+    async register() {
+      try {
+        const response = await axios.post(import.meta.env.VITE_APP_API + 'auth/register', {
           name: this.filled.name,
           email: this.filled.email,
           password: this.filled.password
         })
-        .then((resp) => {
-          const data = resp.data
-          console.info(data)
-        })
-        .catch((err) => {
-          const data = err.response.data
-          console.info(data)
-        })
+        const data = response.data
+        console.info(data)
+
+        this.router.push({ name: 'daftar-success' })
+      } catch (err) {
+        const data = err.response.data
+        console.info(data)
+      }
     }
   },
   components: {
@@ -101,34 +104,27 @@ body {
   background-color: #fafafa;
   height: 100dvh;
 }
-/* Placeholder teks */
 .form-control::placeholder {
   opacity: 0.5;
 }
 
-/* Margin atas untuk container */
 .container-atas {
   padding-top: 88.8px;
 }
 
-/* Margin atas untuk form login */
 .form-login {
   margin-top: 48.38px;
 }
 
-/* Warna teks untuk tautan hijau */
 .green-text {
   color: #00a991;
   text-decoration: none;
 }
 
-/* Gaya tombol daftar */
 .login-button {
   background-color: #009a84;
   color: white;
 }
-
-/* Gaya tambahan untuk judul dan teks */
 
 p {
   font-family: 'Inter', sans-serif;

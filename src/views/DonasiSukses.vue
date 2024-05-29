@@ -1,27 +1,77 @@
 <script>
+import axios from '../interceptors/axios'
 import { useRouter } from 'vue-router'
 
 export default {
   data() {
     return {
-      router: null
+      campaigns: [],
+      loading: true,
+      error: null
     }
   },
   created() {
-    this.router = useRouter()
+    this.fetchData()
   },
   methods: {
-    goBack() {
-      this.router.back()
+    async fetchData() {
+      try {
+        const transactionId = this.$route.params.id
+        const response = await axios.get(
+          `${import.meta.env.VITE_APP_API}campaigntransactions/detail/${transactionId}`,
+          {
+            headers: {
+              Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+          }
+        )
+        this.campaigns = response.data.data
+        console.log('Fetched campaigns:', this.campaigns)
+
+        this.campaigns.amount = this.formatRupiah(this.campaigns.amount)
+      } catch (err) {
+        this.error = 'Failed to fetch data'
+        console.error(err)
+      } finally {
+        this.loading = false
+      }
+    },
+    formatRupiah(amount) {
+      const formatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      })
+      return formatter.format(amount)
+    },
+    formatDate(date) {
+      const parsedDate = new Date(date)
+
+      const formatter = new Intl.DateTimeFormat('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+
+      return formatter.format(parsedDate)
+    }
+  },
+  setup() {
+    const router = useRouter()
+
+    const goBack = () => {
+      router.go(-1)
+    }
+
+    return {
+      goBack
     }
   }
 }
 </script>
+
 <template>
   <body class="mx-auto shadow">
-    <!-- navbar -->
-
-    <!-- card daftar donasi -->
     <div class="banner pb-4">
       <div class="container pt-4 mb-3 px-4">
         <div class="row">
@@ -39,10 +89,12 @@ export default {
           <h4 class="text-center mt-3 desc-banner">Berhasil Melakukan Donasi</h4>
         </div>
         <div>
-          <h1 class="text-center mt-5 nominal-banner">Rp. 2.500.000</h1>
+          <h1 class="text-center mt-5 nominal-banner">{{ campaigns.amount }}</h1>
         </div>
         <div>
-          <p class="text-center mt-3 confirm-banner">Terkonfirmasi 2024-01-01 12:12:20</p>
+          <p class="text-center mt-3 confirm-banner">
+            Terkonfirmasi {{ campaigns.confirmed_date }}
+          </p>
         </div>
       </div>
     </div>
@@ -51,7 +103,7 @@ export default {
       <div class="row justify-content-end">
         <div class="col-6"><p class="text-muted text-start">Campaign</p></div>
         <div class="col-6">
-          <p class="text-muted text-end">Pembangunan Masj...</p>
+          <p class="text-muted text-end">{{ campaigns.title }}</p>
         </div>
       </div>
       <div><h6 class="mt-4 pb-2">Informasi Transaksi</h6></div>
@@ -60,13 +112,13 @@ export default {
           <p class="text-muted text-start">No Transaksi</p>
         </div>
         <div class="col-6">
-          <p class="text-muted text-end">INV-21314142424242</p>
+          <p class="text-muted text-end">{{ campaigns.transacton_id }}</p>
         </div>
       </div>
       <div class="row justify-content-end">
         <div class="col-6"><p class="text-muted text-start">Tanggal</p></div>
         <div class="col-6">
-          <p class="text-muted text-end">29 September 2024</p>
+          <p class="text-muted text-end">{{ formatDate(campaigns.date) }}</p>
         </div>
       </div>
     </div>
@@ -74,8 +126,6 @@ export default {
 </template>
 
 <style scoped>
-/* Gaya CSS dari main.css */
-
 body {
   background-color: #fafafa;
   overflow: auto;

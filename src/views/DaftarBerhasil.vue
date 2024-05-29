@@ -1,5 +1,12 @@
-<script setup>
+<script>
 import { RouterLink, RouterView } from 'vue-router'
+
+export default {
+  components: {
+    RouterLink,
+    RouterView
+  }
+}
 </script>
 <template>
   <body class="mx-auto shadow">

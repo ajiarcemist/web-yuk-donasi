@@ -1,36 +1,59 @@
 <script>
-import axios from 'axios';
+import axios from '../interceptors/axios'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { format } from 'date-fns'
 
 export default {
   setup() {
     const router = useRouter()
+    const profileData = ref({})
 
     const goBack = () => {
       router.back()
     }
 
-    let profileData = {};
+    const handleLogout = async () => {
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_APP_API}auth/logout`,
+          {},
+          {
+            headers: {
+              Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+          }
+        )
 
-    const profile = () => {
-      axios.post(import.meta.env.VITE_APP_API + 'users', {}, {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token'),
-        }
-      }).then((resp) => {
-        console.info(resp);
-
-        // masukkan ke data
-      }).catch((err) => {
-        const data = err.response.data;
-        console.info(data);
-        // tampilkan modal
-
-      })
+        localStorage.removeItem('token')
+        router.push('/login')
+      } catch (error) {
+        console.error('Failed to log out:', error)
+      }
     }
 
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(import.meta.env.VITE_APP_API + 'users/profile', {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
+        const data = response.data.data
+
+        data.registered_date = format(new Date(data.registered_date), 'yyyy-MM-dd')
+        profileData.value = data
+      } catch (error) {
+        console.error('Failed to fetch profile:', error)
+      }
+    }
+
+    onMounted(fetchProfile)
+
     return {
-      goBack
+      goBack,
+      profileData,
+      handleLogout
     }
   }
 }
@@ -42,24 +65,26 @@ export default {
     <div class="banner pb-2">
       <div class="container pt-4 mb-3 px-4">
         <div class="d-flex justify-content-between">
-          <div class="go-back">
-            <img @click="goBack" class="pointer" src="/src/assets/black-arrow.svg" alt="arrow" />
+          <div class="go-back pointer">
+            <img @click="goBack" src="/src/assets/black-arrow.svg" alt="arrow" />
           </div>
 
-          <div><img src="/src/assets/sign-out-alt.svg" alt="sign-out" /></div>
+          <div @click="handleLogout" class="pointer">
+            <img src="/src/assets/sign-out-alt.svg" alt="sign-out" />
+          </div>
         </div>
 
         <div class="img-banner text-center mt-4">
-          <img src="/src/assets/black-elipse.svg" alt="white-check" />
+          <img class="rounded-circle" :src="profileData.avatar_img_url" alt="white-check" />
         </div>
         <div>
-          <h4 class="text-center mt-5 desc-banner">Andri Nur Hidayatuilloh</h4>
+          <h4 class="text-center mt-5 desc-banner">{{ profileData.name }}</h4>
         </div>
         <div>
-          <p class="text-center email-banner mt-4">andribis13@gmail.com</p>
+          <p class="text-center email-banner mt-4">{{ profileData.email }}</p>
         </div>
         <div>
-          <p class="text-center phone-banner">087838698443</p>
+          <p class="text-center phone-banner">{{ profileData.phone }}</p>
         </div>
       </div>
     </div>
@@ -78,7 +103,7 @@ export default {
           <p class="text-muted text-start">Total Donasi</p>
         </div>
         <div class="col-6">
-          <p class="text-muted text-end">Rp. 2.500.000</p>
+          <p class="text-muted text-end">{{ profileData.total_donation }}</p>
         </div>
       </div>
 
@@ -87,7 +112,7 @@ export default {
           <p class="text-muted text-start">Tanggal Terdaftar</p>
         </div>
         <div class="col-6">
-          <p class="text-muted text-end">27 Oktober 2024</p>
+          <p class="text-muted text-end">{{ profileData.registered_date }}</p>
         </div>
       </div>
       <div class="row justify-content-end">
@@ -95,7 +120,7 @@ export default {
           <p class="text-muted text-start">Status Akun</p>
         </div>
         <div class="col-6">
-          <p class="text-muted text-end">Aktif</p>
+          <p class="text-muted text-end">{{ profileData.status }}</p>
         </div>
       </div>
       <hr class="text-muted" />
@@ -111,8 +136,6 @@ export default {
   </body>
 </template>
 <style scoped>
-/* Gaya CSS dari main.css */
-
 body {
   background-color: #fafafa;
   overflow: auto;
