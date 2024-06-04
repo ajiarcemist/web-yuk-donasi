@@ -2,6 +2,7 @@
 import CardDonasi from '@/components/CardDonasi.vue'
 import { useRouter } from 'vue-router'
 import axios from '@/interceptors/axios'
+// import CardDonasi from '@/components/CardDonasi.vue';
 
 export default {
   components: {
@@ -21,6 +22,7 @@ export default {
   data() {
     return {
       campaigns: {},
+      listCampaigns: [],
       loading: true,
       error: null,
       filled: {
@@ -28,10 +30,17 @@ export default {
       }
     }
   },
+  watch: {
+    '$route.params.id': 'reloadPageDetailCampaign',
+  },
   created() {
     this.fetchData()
+    this.fetchCampaigns();
   },
   methods: {
+    goToDetail(id) {
+      this.$router.replace('/detail/' + id);
+    }, 
     async fetchData() {
       try {
         const campaignsId = this.$route.params.id
@@ -51,6 +60,26 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+    async fetchCampaigns() {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_APP_API}campaigns`, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
+        this.listCampaigns = response.data.data
+        // console.log('Fetched campaigns:', this.campaigns)
+      } catch (err) {
+        this.error = 'Failed to fetch data'
+        console.error(err)
+      } finally {
+        this.loading = false
+      }
+    },
+    reloadPageDetailCampaign() {
+      this.campaigns.id = '';
+      this.fetchData();
     },
     formatRupiah(amount) {
       const formatter = new Intl.NumberFormat('id-ID', {
@@ -152,7 +181,11 @@ export default {
             </div>
           </form>
         </div>
-        <CardDonasi />
+        <swiper-container space-between="60" slides-per-view="1" navigation="true" loop="true">
+          <swiper-slide v-for="campaignItem in listCampaigns" :key="campaignItem.id">
+            <CardDonasi @click.native="goToDetail(campaignItem.id)" :payload=campaignItem />
+          </swiper-slide>
+        </swiper-container>
         <div class="mx-auto d-grid sumbang-button pb-4">
           <button
             class="btn button-sumbang text-wrap"

@@ -1,46 +1,46 @@
 <template>
-  <swiper-container space-between="60" slides-per-view="1" navigation="true" loop="true">
-    <swiper-slide v-for="campaign in campaigns" :key="campaign.id">
+  <!-- <swiper-container space-between="60" slides-per-view="1" navigation="true" loop="true"> -->
+    <!-- <swiper-slide v-for="campaign in campaigns" :key="campaign.id"> -->
       <div class="my-5">
         <div class="swipe">
           <div class="d-flex justify-content-center">
-            <RouterLink :to="`/detail/${campaign.id}`" style="text-decoration: none">
+            <div style="text-decoration: none">
               <div class="card rounded-4 card-project">
                 <div>
                   <div>
                     <img
-                      :src="campaign.campaign_image_url"
+                      :src="payload.campaign_image_url"
                       class="card-img-top rounded-4"
                       alt="coverCard"
                     />
                   </div>
                   <div class="card-body card-project-body">
-                    <h5 class="card-title">{{ campaign.title }}</h5>
-                    <p class="card-text">{{ campaign.location }}</p>
+                    <h5 class="card-title">{{ payload.title }}</h5>
+                    <p class="card-text">{{ payload.location }}</p>
                     <div class="progress">
                       <div
                         class="progress-bar warna-progress rounded-4"
                         role="progressbar"
-                        :style="{ width: campaign.percentage_value + '%' }"
-                        :aria-valuenow="campaign.percentage_value"
+                        :style="{ width: payload.percentage_value + '%' }"
+                        :aria-valuenow="payload.percentage_value"
                         aria-valuemin="0"
                         aria-valuemax="100"
                       ></div>
                     </div>
                     <p>
                       Terkumpul
-                      <span class="total-donasi">{{ formatRupiah(campaign.current_amount) }}</span>
+                      <span class="total-donasi">{{ formatRupiah(payload.current_amount) }}</span>
                     </p>
                   </div>
                 </div>
               </div>
-            </RouterLink>
+            </div>
           </div>
         </div>
         <RouterView />
       </div>
-    </swiper-slide>
-  </swiper-container>
+    <!-- </swiper-slide> -->
+  <!-- </swiper-container> -->
 </template>
 
 <script>
@@ -52,15 +52,17 @@ export default {
     RouterLink,
     RouterView
   },
+  props: ['payload'],
   data() {
     return {
-      campaigns: [],
+      // campaigns: [],
+      campaign: {},
       loading: true,
       error: null
     }
   },
   created() {
-    this.fetchData()
+    // this.fetchData()
   },
   methods: {
     async fetchData() {

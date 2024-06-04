@@ -16,7 +16,11 @@
             <img :src="users.avatar_url" alt="avatar" class="avatar" />
           </div>
         </div>
-        <CardDonasi />
+        <swiper-container space-between="60" slides-per-view="1" navigation="true" loop="true">
+          <swiper-slide v-for="campaignItem in listCampaigns" :key="campaignItem.id">
+            <CardDonasi @click="goToDetail(campaignItem.id)" :payload=campaignItem />
+          </swiper-slide>
+        </swiper-container>
 
         <!-- history donasi-->
         <p class="history-donasi">Donasi Anda</p>
@@ -70,6 +74,7 @@ export default {
     return {
       users: {},
       campaigns: [],
+      listCampaigns: [],
       loading: true,
       error: null
     }
@@ -77,8 +82,28 @@ export default {
   created() {
     this.fetchDataCampaign()
     this.fetchDataUser()
+    this.fetchListCampaigns()
   },
   methods: {
+    goToDetail(id) {
+      this.$router.push('/detail/' + id);
+    },
+    async fetchListCampaigns() {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_APP_API}campaigns`, {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
+        this.listCampaigns = response.data.data
+        // console.log('Fetched campaigns:', this.campaigns)
+      } catch (err) {
+        this.error = 'Failed to fetch data'
+        console.error(err)
+      } finally {
+        this.loading = false
+      }
+    },
     async fetchDataUser() {
       try {
         const response = await axios.get(`${import.meta.env.VITE_APP_API}users`, {
