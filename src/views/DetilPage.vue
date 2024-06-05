@@ -26,7 +26,8 @@ export default {
       error: null,
       filled: {
         nominal: ''
-      }
+      },
+      paymentLink: ''
     }
   },
   watch: {
@@ -43,6 +44,7 @@ export default {
     async fetchData() {
       try {
         const campaignsId = this.$route.params.id
+        console.log(campaignsId)
         const response = await axios.get(
           `${import.meta.env.VITE_APP_API}campaigns/${campaignsId}`,
           {
@@ -54,10 +56,20 @@ export default {
         this.campaigns = response.data.data
         console.log('Fetched campaigns:', this.campaigns)
       } catch (err) {
-        this.error = 'Failed to fetch data'
-        console.error(err)
-      } finally {
-        this.loading = false
+        if (
+          err.response &&
+          err.response.status === 401 &&
+          err.response.data.meta &&
+          err.response.data.meta.status === 'TOKEN_EXPIRED'
+        ) {
+          console.log('**Token expired. Clearing local storage...**')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user_id')
+          this.error = 'Token expired. Please log in again.'
+        } else {
+          this.error = 'Failed to fetch data'
+          console.error(err)
+        }
       }
     },
     async fetchCampaigns() {
@@ -68,7 +80,7 @@ export default {
           }
         })
         this.listCampaigns = response.data.data
-        // console.log('Fetched campaigns:', this.campaigns)
+        // console.log('Fetched campaigns:', this.campaigns);
       } catch (err) {
         this.error = 'Failed to fetch data'
         console.error(err)
@@ -90,32 +102,26 @@ export default {
     },
     async donate() {
       const campaignId = this.$route.params.id
-      const userId = localStorage.getItem('user_id')
       const amount = this.filled.nominal
+      const token = localStorage.getItem('token')
 
       try {
-        const response = await axios.post(`${import.meta.env.VITE_APP_API}donate`, {
-          user_id: userId,
-          campaign_id: campaignId,
-          amount: amount
-        })
+        const response = await axios.post(
+          `${import.meta.env.VITE_APP_API}donate`,
+          {
+            campaign_id: campaignId,
+            amount: amount
+          },
+          {
+            headers: {
+              Authorization: 'Bearer ' + token
+            }
+          }
+        )
+        this.paymentLink = response.data.data.payment_link
         console.log('Donation successful:', response.data)
-      } catch (error) {
-        console.error('Error donating:', error)
-      }
-    },
-    async submitDonation() {
-      try {
-        const campaignId = this.$route.params.id
-        const userId = localStorage.getItem('user_id')
-        const amount = this.filled.nominal
-
-        const response = await axios.post(`${import.meta.env.VITE_APP_API}donate`, {
-          user_id: userId,
-          campaign_id: campaignId,
-          amount: amount
-        })
-        console.log('Donation successful:', response.data)
+        console.log('Apa isi dari paymentLink:', this.paymentLink)
+        window.location = this.paymentLink
       } catch (error) {
         console.error('Error donating:', error)
       }
@@ -190,7 +196,7 @@ export default {
             class="btn button-sumbang text-wrap"
             type="submit"
             form="donationForm"
-            @click.prevent="submitDonation"
+            @click.prevent="donate"
           >
             Sumbangkan Sekarang!
           </button>
