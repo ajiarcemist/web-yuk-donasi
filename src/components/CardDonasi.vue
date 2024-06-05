@@ -45,7 +45,7 @@
 
 <script>
 import { RouterLink, RouterView } from 'vue-router'
-import axios from '../interceptors/axios'
+import axios from 'axios'
 
 export default {
   components: {
@@ -75,8 +75,19 @@ export default {
         this.campaigns = response.data.data
         console.log('Fetched campaigns:', this.campaigns)
       } catch (err) {
-        this.error = 'Failed to fetch data'
-        console.error(err)
+        if (
+          err.response &&
+          err.response.status === 401 &&
+          err.response.data.meta.status === 'TOKEN_EXPIRED'
+        ) {
+          console.log('Token expired. Clearing local storage...')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user_id')
+          this.error = 'Token expired. Please log in again.'
+        } else {
+          this.error = 'Failed to fetch data'
+          console.error(err)
+        }
       } finally {
         this.loading = false
       }

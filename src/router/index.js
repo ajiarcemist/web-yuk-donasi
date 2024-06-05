@@ -9,7 +9,7 @@ import DonasiSukses from '@/views/DonasiSukses.vue'
 import HistoryDonasi from '@/views/HistoryDonasi.vue'
 import LoginPage from '@/views/LoginPage.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
-
+import DonasiBerhasil from '@/views/DonasiBerhasil.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -34,6 +34,12 @@ const router = createRouter({
       path: '/daftar-success',
       name: 'daftar-success',
       component: DaftarBerhasil
+    },
+    {
+      path: '/donasi-berhasil',
+      name: 'donasi-berhasil',
+      component: DonasiBerhasil,
+      meta: { auth: true }
     },
     {
       path: '/detail/:id',

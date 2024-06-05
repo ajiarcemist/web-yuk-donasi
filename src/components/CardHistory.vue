@@ -1,35 +1,43 @@
 <template>
   <div>
-    <div v-for="transaction in transactions" :key="transaction.id" @click="allowRouteAccess">
-      <RouterLink :to="getRouterLink(transaction.status, transaction.id)" class="router-link">
-        <div class="card mb-3 card-history border-0 rounded-4">
-          <div class="row">
-            <div class="col-3 my-auto img-card">
-              <img
-                :src="transaction.campaign_img_url"
-                class="img-fluid rounded-4 history-img"
-                alt="cover-daftar"
-              />
-            </div>
-            <div class="col-7 left-content-card">
-              <div class="card-body body-card-history">
-                <h5 class="card-title">{{ transaction.title }}</h5>
-                <p class="card-text">{{ transaction.location }}</p>
+    <div v-if="loading">
+      <p>Loading...</p>
+    </div>
+    <div v-else-if="error">
+      <p>{{ error }}</p>
+    </div>
+    <div v-else>
+      <div v-for="transaction in transactions" :key="transaction.id" @click="allowRouteAccess">
+        <RouterLink :to="getRouterLink(transaction.status, transaction.id)" class="router-link">
+          <div class="card mb-3 card-history border-0 rounded-4">
+            <div class="row">
+              <div class="col-3 my-auto img-card">
+                <img
+                  :src="transaction.campaign_img_url"
+                  class="img-fluid rounded-4 history-img"
+                  alt="cover-daftar"
+                />
+              </div>
+              <div class="col-7 left-content-card">
+                <div class="card-body body-card-history">
+                  <h5 class="card-title">{{ transaction.title }}</h5>
+                  <p class="card-text">{{ transaction.location }}</p>
+                </div>
+              </div>
+              <div class="col-2">
+                <img :src="getStatusIcon(transaction.status)" alt="checkmark" class="mx-auto" />
               </div>
             </div>
-            <div class="col-2">
-              <img :src="getStatusIcon(transaction.status)" alt="checkmark" class="mx-auto" />
-            </div>
           </div>
-        </div>
-      </RouterLink>
+        </RouterLink>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { RouterLink } from 'vue-router'
-import axios from '../interceptors/axios'
+import axios from 'axios'
 
 export default {
   components: {
@@ -37,7 +45,9 @@ export default {
   },
   data() {
     return {
-      transactions: []
+      transactions: [],
+      loading: true,
+      error: null
     }
   },
   created() {
@@ -56,7 +66,21 @@ export default {
         )
         this.transactions = response.data.data
       } catch (error) {
-        console.error('Failed to fetch campaign transactions:', error)
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          error.response.data.meta.status === 'TOKEN_EXPIRED'
+        ) {
+          console.log('Token expired. Clearing local storage...')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user_id')
+          this.error = 'Token expired. Please log in again.'
+        } else {
+          this.error = 'Failed to fetch campaign transactions'
+          console.error('Failed to fetch campaign transactions:', error)
+        }
+      } finally {
+        this.loading = false
       }
     },
     getRouterLink(status, id) {
@@ -80,12 +104,6 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.router-link {
-  text-decoration: none;
-}
-</style>
 
 <style scoped>
 .card-text {

@@ -1,64 +1,3 @@
-<script>
-import axios from '../interceptors/axios'
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { format } from 'date-fns'
-
-export default {
-  setup() {
-    const router = useRouter()
-    const profileData = ref({})
-
-    const goBack = () => {
-      router.back()
-    }
-
-    const handleLogout = async () => {
-      try {
-        await axios.post(
-          `${import.meta.env.VITE_APP_API}auth/logout`,
-          {},
-          {
-            headers: {
-              Authorization: 'Bearer ' + localStorage.getItem('token')
-            }
-          }
-        )
-
-        localStorage.removeItem('token')
-        router.push('/login')
-      } catch (error) {
-        console.error('Failed to log out:', error)
-      }
-    }
-
-    const fetchProfile = async () => {
-      try {
-        const response = await axios.get(import.meta.env.VITE_APP_API + 'users/profile', {
-          headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('token')
-          }
-        })
-        const data = response.data.data
-
-        data.registered_date = format(new Date(data.registered_date), 'yyyy-MM-dd')
-        profileData.value = data
-      } catch (error) {
-        console.error('Failed to fetch profile:', error)
-      }
-    }
-
-    onMounted(fetchProfile)
-
-    return {
-      goBack,
-      profileData,
-      handleLogout
-    }
-  }
-}
-</script>
-
 <template>
   <body class="mx-auto shadow">
     <!-- card daftar donasi -->
@@ -135,6 +74,82 @@ export default {
     </div>
   </body>
 </template>
+
+<script>
+import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { format } from 'date-fns'
+
+export default {
+  setup() {
+    const router = useRouter()
+    const profileData = ref({})
+    const error = ref(null)
+
+    const goBack = () => {
+      router.back()
+    }
+
+    const handleLogout = async () => {
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_APP_API}auth/logout`,
+          {},
+          {
+            headers: {
+              Authorization: 'Bearer ' + localStorage.getItem('token')
+            }
+          }
+        )
+
+        localStorage.removeItem('token')
+        router.push('/login')
+      } catch (error) {
+        console.error('Failed to log out:', error)
+      }
+    }
+
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(import.meta.env.VITE_APP_API + 'users/profile', {
+          headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('token')
+          }
+        })
+        const data = response.data.data
+
+        data.registered_date = format(new Date(data.registered_date), 'yyyy-MM-dd')
+        profileData.value = data
+      } catch (error) {
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          error.response.data.meta.status === 'TOKEN_EXPIRED'
+        ) {
+          console.log('Token expired. Clearing local storage...')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user_id')
+          error.value = 'Token expired. Please log in again.'
+        } else {
+          error.value = 'Failed to fetch profile data'
+          console.error(error)
+        }
+      }
+    }
+
+    onMounted(fetchProfile)
+
+    return {
+      goBack,
+      profileData,
+      handleLogout,
+      error
+    }
+  }
+}
+</script>
+
 <style scoped>
 body {
   background-color: #fafafa;

@@ -1,5 +1,5 @@
 <script>
-import axios from '../interceptors/axios'
+import axios from 'axios'
 import { useRouter } from 'vue-router'
 
 export default {
@@ -30,8 +30,21 @@ export default {
 
         this.campaigns.amount = this.formatRupiah(this.campaigns.amount)
       } catch (err) {
-        this.error = 'Failed to fetch data'
-        console.error(err)
+        // Check for "TOKEN_EXPIRED" error and handle it
+        if (
+          err.response &&
+          err.response.status === 401 &&
+          err.response.data.meta &&
+          err.response.data.meta.status === 'TOKEN_EXPIRED'
+        ) {
+          console.log('**Token expired. Clearing local storage...**')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user_id')
+          this.error = 'Token expired. Please log in again.'
+        } else {
+          this.error = 'Failed to fetch data'
+          console.error(err)
+        }
       } finally {
         this.loading = false
       }

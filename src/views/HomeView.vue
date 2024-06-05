@@ -63,7 +63,7 @@
 <script>
 import CardDonasi from '@/components/CardDonasi.vue'
 import FooterNav from '@/components/FooterNav.vue'
-import axios from '../interceptors/axios'
+import axios from 'axios'
 
 export default {
   components: {
@@ -114,8 +114,19 @@ export default {
         this.users = response.data.data
         console.log('Fetched user:', this.users)
       } catch (err) {
-        this.error = 'Failed to fetch user data'
-        console.error(err)
+        if (
+          err.response &&
+          err.response.status === 401 &&
+          err.response.data.meta.status === 'TOKEN_EXPIRED'
+        ) {
+          console.log('Token expired. Clearing local storage...')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user_id')
+          this.error = 'Token expired. Please log in again.'
+        } else {
+          this.error = 'Failed to fetch user data'
+          console.error(err)
+        }
       }
     },
     async fetchDataCampaign() {
@@ -129,13 +140,24 @@ export default {
             }
           }
         )
-        this.campaigns = response.data.data
+        this.campaigns = response.data.data.slice(0, 4)
         console.log('Fetched campaigns:', this.campaigns)
         this.loading = false
       } catch (err) {
-        this.error = 'Failed to fetch campaign data'
-        console.error(err)
-        this.loading = false
+        if (
+          err.response &&
+          err.response.status === 401 &&
+          err.response.data.meta.status === 'TOKEN_EXPIRED'
+        ) {
+          console.log('Token expired. Clearing local storage...')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user_id')
+          this.error = 'Token expired. Please log in again.'
+        } else {
+          this.error = 'Failed to fetch campaign data'
+          console.error(err)
+          this.loading = false
+        }
       }
     }
   }
