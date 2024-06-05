@@ -38,6 +38,9 @@
 <script>
 import { RouterLink } from 'vue-router'
 import axios from 'axios'
+import checkLogo from '../assets/check.svg';
+import crossLogo from '../assets/cross.svg';
+import flagLogo from '../assets/flag.svg';
 
 export default {
   components: {
@@ -47,7 +50,11 @@ export default {
     return {
       transactions: [],
       loading: true,
-      error: null
+      error: null,
+
+      checkLogo,
+      crossLogo,
+      flagLogo,
     }
   },
   created() {
@@ -94,11 +101,11 @@ export default {
     },
     getStatusIcon(status) {
       if (status === 'success') {
-        return '/src/assets/check.svg'
+        return checkLogo;
       } else if (status === 'pending') {
-        return '/src/assets/flag.svg'
+        return flagLogo;
       } else {
-        return '/src/assets/cross.svg'
+        return crossLogo;
       }
     }
   }
