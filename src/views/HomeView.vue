@@ -18,7 +18,7 @@
         </div>
         <swiper-container space-between="60" slides-per-view="1" navigation="true" loop="true">
           <swiper-slide v-for="campaignItem in listCampaigns" :key="campaignItem.id">
-            <CardDonasi @click="goToDetail(campaignItem.id)" :payload=campaignItem />
+            <CardDonasi @click="goToDetail(campaignItem.id)" :payload="campaignItem" />
           </swiper-slide>
         </swiper-container>
 
@@ -86,7 +86,7 @@ export default {
   },
   methods: {
     goToDetail(id) {
-      this.$router.push('/detail/' + id);
+      this.$router.push('/detail/' + id)
     },
     async fetchListCampaigns() {
       try {
